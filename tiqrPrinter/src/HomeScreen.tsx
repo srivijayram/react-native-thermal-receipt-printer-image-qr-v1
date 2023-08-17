@@ -29,11 +29,7 @@ import QRCode from 'react-native-qrcode-svg';
 import {useRef} from 'react';
 import {Buffer} from 'buffer';
 
-import { Printer, Image } from "@node-escpos/core";
-// install escpos-usb adapter module manually
-//import USB from "@node-escpos/usb-adapter";
-import Bluetooth from "@node-escpos/bluetooth-adapter"
-// Select the adapter based on your printer type
+
 import { join } from "path";
 
 const printerList: Record<string, any> = {
@@ -58,50 +54,6 @@ export enum DevicesEnum {
 const deviceWidth = Dimensions.get('window').width;
 const EscPosEncoder = require('esc-pos-encoder');
 
-
-
-const device = new Bluetooth('00:00:02:04:40:27', 1);
-
-device.open(async function(err){
-  if(err){
-    // handle error
-    return
-  }
-
-  // encoding is optional
-  const options = { encoding: "GB18030" /* default */ }
-  let printer = new Printer(device, options);
-
-  // Path to png image
-  //const filePath = join("/PATH/TO/IMAGE");
-  //const image = await Image.load(filePath);
-
-  printer
-    .font("a")
-    .align("ct")
-    .style("bu")
-    .size(1, 1)
-    .text("May the gold fill your pocket")
-    .tableCustom(
-      [
-        { text: "Left", align: "LEFT", width: 0.33, style: "B" },
-        { text: "Center", align: "CENTER", width: 0.33 },
-        { text: "Right", align: "RIGHT", width: 0.33 },
-      ],
-      { encoding: "cp857", size: [1, 1] }, // Optional
-    )
-    
-  // inject qrimage to printer
-  printer = await printer.qrimage("https://github.com/node-escpos/driver")
-  // inject image to printer
-  // printer = await printer.image(
-  //   image, 
-  //   "s8" // changing with image
-  // )
-  printer
-    .cut()
-    .close()
-});
 
 export const HomeScreen = ({route}: any) => {
   const [selectedValue, setSelectedValue] = React.useState<
