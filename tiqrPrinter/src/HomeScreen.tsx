@@ -140,7 +140,7 @@ export const HomeScreen = ({route}: any) => {
               console.log('connect -> status', res);
               Alert.alert(
                 'Connect successfully!',
-                `Connected to ${res ?? 'Printers'} !`,
+                `Connected to ${res?.device_name ?? 'Printers'} !`,
               );
               // setConnected(true);
             } catch (err) {
