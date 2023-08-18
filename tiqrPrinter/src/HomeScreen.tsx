@@ -343,7 +343,7 @@ export const HomeScreen = ({route}: any) => {
 
   const _renderNet = () => (
     <>
-      <Text style={[styles.text, {color: 'black', marginLeft: 0}]}>
+      <Text style={[styles.text, {color: '#FFF', marginLeft: 0}]}>
         Your printer ip....
       </Text>
       <TextInput
@@ -465,6 +465,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor:'#000'
   },
   section: {},
   rowDirection: {
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   title: {
-    color: 'black',
+    color: '#FFF',
     fontSize: 15,
     fontWeight: 'bold',
     marginLeft: 5,
