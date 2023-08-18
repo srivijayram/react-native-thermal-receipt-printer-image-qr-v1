@@ -1,5 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import { Picker} from '@react-native-picker/picker';
+import { BluetoothEscposPrinter, BluetoothTscPrinter } from '@brooons/react-native-bluetooth-escpos-printer';
+
 import * as React from 'react';
 import {
   StyleSheet,
@@ -26,8 +28,10 @@ import {DeviceType} from './FindPrinter';
 import {navigate} from './App';
 import AntIcon from 'react-native-vector-icons/AntDesign';
 import QRCode from 'react-native-qrcode-svg';
-import {useRef} from 'react';
+import {useRef, useState} from 'react';
 import {Buffer} from 'buffer';
+
+import ThermalPrinterModule from 'react-native-thermal-printer';
 
 
 import { join } from "path";
@@ -65,6 +69,76 @@ export const HomeScreen = ({route}: any) => {
   const [selectedPrinter, setSelectedPrinter] = React.useState<SelectedPrinter>(
     {},
   );
+
+  const [state, setState] = useState({
+    text:
+      '[C]<img>https://via.placeholder.com/300.jpg</img>\n' +
+      '[L]\n' +
+      "[C]<u><font size='big'>ORDER N°045</font></u>\n" +
+      '[L]\n' +
+      '[C]================================\n' +
+      '[L]\n' +
+      '[L]<b>BEAUTIFUL SHIRT</b>[R]9.99e\n' +
+      '[L]  + Size : S\n' +
+      '[L]\n' +
+      '[L]<b>AWESOME HAT</b>[R]24.99e\n' +
+      '[L]  + Size : 57/58\n' +
+      '[L]\n' +
+      '[C]--------------------------------\n' +
+      '[R]TOTAL PRICE :[R]34.98e\n' +
+      '[R]TAX :[R]4.23e\n' +
+      '[L]\n' +
+      '[C]================================\n' +
+      '[L]\n' +
+      "[L]<font size='tall'>Customer :</font>\n" +
+      '[L]Raymond DUPONT\n' +
+      '[L]5 rue des girafes\n' +
+      '[L]31547 PERPETES\n' +
+      '[L]Tel : +33801201456\n' +
+      '[L]\n' +
+      "[C]<barcode type='ean13' height='10'>831254784551</barcode>\n" +
+      "[C]<qrcode size='20'>http://www.developpeur-web.dantsu.com/</qrcode>",
+  });
+
+
+  async function printEscpos() {
+    const textToPrint = 'eshipz!\nTesting print using raw mode.\n';
+    // const rawBytes = textToRawBytes(textToPrint);
+    // console.log('rawBytes :' + rawBytes)
+    const columnWidths = [24, 24];
+  
+    const fcuser = 'John doe';
+    const collectionRecieptNo = 121;
+    
+    
+    try {
+      const zpl =  '^XA^FO50,50^ADN,36,20^FDHello, Zebra!^FS^XZ';
+    
+      //await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
+  
+      const printResult = await BluetoothEscposPrinter.printText(textToPrint, { });
+      console.log('Print successful:', printResult);
+      //await BluetoothEscposPrinter.printText('\r\n', {});
+  
+      // await BluetoothEscposPrinter.printText(zpl, {});
+  
+      // await BluetoothEscposPrinter.printText('\r\n\r\n\r\n', {});
+  
+      // await BluetoothEscposPrinter.printText('\r\n', {});
+  
+      // await BluetoothEscposPrinter.printColumn(
+      //   [48],
+      //   [BluetoothEscposPrinter.ALIGN.LEFT],
+      //   ['Printed By:'+ fcuser],
+      //   {},
+      // );
+  
+    } catch (e:any) {
+      Alert.alert(e.message || 'ERROR');
+      console.log(e || ' EscposPrinter ERROR')
+    }
+  }
+
   let QrRef = useRef<any>(null);
   const [selectedNetPrinter, setSelectedNetPrinter] =
     React.useState<DeviceType>({
@@ -114,6 +188,27 @@ export const HomeScreen = ({route}: any) => {
     getListDevices().then();
   }, [selectedValue]);
 
+  const onPress = async () => {
+    try {
+      console.log('We will invoke the native module here!');
+      //await ThermalPrinterModule.printTcp({ payload: state.text });
+
+      
+      //bluetooth
+      const res = await ThermalPrinterModule.printBluetooth({
+          macAddress: '00:00:02:04:40:27',
+          payload: state?.text,
+          //autoCut: true,
+      });
+    
+
+      console.log('done printing-- ' + res);
+    } catch (err:any) {
+      //error handling
+      console.log('err-- '+err);
+    }
+  };
+
   const handleConnectSelectedPrinter = async () => {
     setLoading(true);
     const connect = async () => {
@@ -140,7 +235,7 @@ export const HomeScreen = ({route}: any) => {
               console.log('connect -> status', res);
               Alert.alert(
                 'Connect successfully!',
-                `Connected to ${res?.device_name ?? 'Printers'} !`,
+                `Connected to ${res?.device_name ?? 'Printer'} !`,
               );
               // setConnected(true);
             } catch (err) {
@@ -201,21 +296,32 @@ export const HomeScreen = ({route}: any) => {
     return new Uint8Array(escCommands);
   }
 
+  
   const handlePrint = async () => {
     try {
       const text = 'eshipz test'
+      //const text1= '0x1D, 0x56, 0x41, 0x10'
       const rawText = textToRawBytes(text)
       const Printer = printerList[selectedValue];
       // Printer.printText(rawText, {
       //   cut: false,
       //   type:'raw'
       // });
-      const res = await Printer.printRaw(text)
+      //Printer.printRaw(text1)
+      Printer.printText(text)
+      // Printer.printImage(
+      //   "https://media-cdn.tripadvisor.com/media/photo-m/1280/1b/3a/bd/b5/the-food-bill.jpg",
+      //   {
+      //     imageWidth: 575,
+      //     // imageHeight: 1000,
+      //     // paddingX: 100
+      //   }
+      // );
       // Printer.printImage(
       //   'https://sportshub.cbsistatic.com/i/2021/04/09/9df74632-fde2-421e-bc6f-d4bf631bf8e5/one-piece-trafalgar-law-wano-anime-1246430.jpg',
       // );
       //Printer.printBill('sample text');
-      console.log('res' + res)
+      //console.log('res' + res)
     } catch (err) {
       console.log(err);
     }
@@ -337,13 +443,21 @@ export const HomeScreen = ({route}: any) => {
     navigate('Find');
   };
 
+  const posNavigate = () => {
+    navigate('PosPrinter');
+  };
+
+  const BleNavigate = () => {
+    navigate('Ble');
+  };
+
   const onChangeText = (text: string) => {
     setSelectedNetPrinter({...selectedNetPrinter, host: text});
   };
 
   const _renderNet = () => (
     <>
-      <Text style={[styles.text, {color: 'black', marginLeft: 0}]}>
+      <Text style={[styles.text, {color: '#FFF', marginLeft: 0}]}>
         Your printer ip....
       </Text>
       <TextInput
@@ -372,7 +486,7 @@ export const HomeScreen = ({route}: any) => {
 
   const _renderOther = () => (
     <>
-      <Text>Select printer: </Text>
+      <Text style={styles.title}>Select printer: </Text>
       <Picker
         selectedValue={selectedPrinter}
         onValueChange={setSelectedPrinter}>
@@ -425,6 +539,23 @@ export const HomeScreen = ({route}: any) => {
             <Text style={styles.text}>Connect</Text>
           </TouchableOpacity>
         </View>
+        {/* <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, {backgroundColor: 'blue'}]}
+            onPress={posNavigate}>
+            <AntIcon name={'printer'} color={'white'} size={18} />
+            <Text style={styles.text}>pos</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, {backgroundColor: 'blue'}]}
+            onPress={BleNavigate}>
+            <AntIcon name={'printer'} color={'white'} size={18} />
+            <Text style={styles.text}>pos</Text>
+          </TouchableOpacity>
+        </View> */}
         {/* Button Print sample */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -432,6 +563,14 @@ export const HomeScreen = ({route}: any) => {
             onPress={handlePrint}>
             <AntIcon name={'printer'} color={'white'} size={18} />
             <Text style={styles.text}>Print sample</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.button, {backgroundColor: 'blue'}]}
+            onPress={printEscpos}>
+            <AntIcon name={'printer'} color={'white'} size={18} />
+            <Text style={styles.text}>Print using escpos</Text>
           </TouchableOpacity>
         </View>
         {/* Button Print bill */}
@@ -465,6 +604,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor:'#000'
   },
   section: {},
   rowDirection: {
@@ -490,7 +630,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   title: {
-    color: 'black',
+    color: '#FFF',
     fontSize: 15,
     fontWeight: 'bold',
     marginLeft: 5,

@@ -4,6 +4,8 @@ import React, {createRef} from 'react';
 import {HomeScreen} from './HomeScreen';
 import {FindPrinter} from './FindPrinter';
 import SunmiScreen from './Sunmi-v2';
+import PosPrinter from './PosPrinter';
+import BleManagerScreen from './BleManagerScreen';
 
 export const navigationRef = createRef<any>();
 
@@ -30,6 +32,20 @@ export const App = () => {
             headerTitle: 'Find Printer',
           }}
           component={FindPrinter}
+        />
+         <Stack.Screen
+          name="PosPrinter"
+          options={{
+            headerTitle: 'pos printer',
+          }}
+          component={PosPrinter}
+        />
+         <Stack.Screen
+          name="Ble"
+          options={{
+            headerTitle: 'Ble manager',
+          }}
+          component={BleManagerScreen}
         />
         {/* <Stack.Screen
           name="Sunmi"

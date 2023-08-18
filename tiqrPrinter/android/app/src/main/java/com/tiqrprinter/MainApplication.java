@@ -1,4 +1,5 @@
 package com.tiqrprinter;
+import cn.jystudio.bluetooth.RNBluetoothEscposPrinterPackage;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
